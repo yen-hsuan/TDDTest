@@ -46,6 +46,13 @@ public class UnitTest1
         var actual = _budgetService.Query(new DateTime(2023, 1, 1), new DateTime(2023, 1, 1));
         actual.Should().Be(10);
     }
+    [Fact]
+    public void query_amount_when_budget_not_exist_then_return_0()
+    {
+        _budgetRepo.GetAll().Returns(new List<Budget> { });
+        var actual = _budgetService.Query(new DateTime(2023, 1, 1), new DateTime(2023, 1, 31));
+        actual.Should().Be(0);
+    }
     
     [Fact]
     public void query_invalid_period_should_return_zero()
@@ -70,7 +77,13 @@ public class BudgetService
         var budgets = _budgetRepo.GetAll();
 
         var diffDays = (end-start).TotalDays + 1 ;
-        var amount = budgets.FirstOrDefault().Amount;
+        var budgetList = budgets.Where(x=>x.YearMonth == start.ToString("yyyyMM")).ToList();
+        if (budgetList.Count == 0)
+        {
+            return 0;
+        }
+        var firstOrDefault = budgetList.FirstOrDefault();
+        var amount = firstOrDefault.Amount;
         var amountByDay = amount / DateTime.DaysInMonth(start.Year, end.Month);
         
         return  (decimal)(diffDays * amountByDay);
