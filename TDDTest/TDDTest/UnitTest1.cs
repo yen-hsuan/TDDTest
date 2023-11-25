@@ -27,7 +27,7 @@ public class UnitTest1
     }
 
     [Fact]
-    public void query_amount_in_one_month_should_return_zero()
+    public void query_amount_in_one_month_should_return_10()
     {
         _budgetRepo.GetAll().Returns(new List<Budget>
         {
@@ -56,8 +56,7 @@ public class UnitTest1
         actual.Should().Be(0);
     }
 
-    [Fact]
-    public void get_period_between_two_months()
+    [Fact] public void query_amount_in_two_months_and_all_exist()
     {
         _budgetRepo.GetAll().Returns(new List<Budget>
         {
@@ -76,6 +75,71 @@ public class UnitTest1
         actual.Should().Be(50);
     }
 
+    [Fact]
+    public void query_amount_in_two_month_and_one_not_exist()
+    {
+        _budgetRepo.GetAll().Returns(new List<Budget> { new Budget
+            {
+                YearMonth = "202301",
+                Amount = 310
+            }
+        });
+        var actual = _budgetService.Query(new DateTime(2023, 1, 1), new DateTime(2023, 2, 15));
+        actual.Should().Be(310); 
+    }
+
+    [Fact]
+    public void query_amount_in_leap_year()
+    {
+        _budgetRepo.GetAll().Returns(new List<Budget> { new Budget
+            {
+                YearMonth = "201602",
+                Amount = 290
+            },
+        });
+        var actual = _budgetService.Query(new DateTime(2016, 2, 29), new DateTime(2016, 2, 29));
+        actual.Should().Be(10); 
+        
+    }
+    
+    [Fact]
+    public void query_amount_in_three_month_and_one_not_exist()
+    {
+        _budgetRepo.GetAll().Returns(new List<Budget> { new Budget
+            {
+                YearMonth = "202310",
+                Amount = 310
+            },
+            new Budget
+            {
+                YearMonth = "202312",
+                Amount = 620
+            }
+        });
+        var actual = _budgetService.Query(new DateTime(2023, 10, 31), new DateTime(2023, 12, 2));
+        actual.Should().Be(50); 
+        
+    }
+
+    [Fact]
+    public void query_cross_two_year()
+    {
+        _budgetRepo.GetAll().Returns(new List<Budget> { new Budget
+            {
+                YearMonth = "202312",
+                Amount = 310
+            },
+            new Budget
+            {
+                YearMonth = "202401",
+                Amount = 620
+            }
+        });
+        var actual = _budgetService.Query(new DateTime(2023, 12, 31), new DateTime(2024, 1, 2));
+        actual.Should().Be(50); 
+        
+    }
+    
     [Fact]
     public void query_invalid_period_should_return_zero()
     {
@@ -98,8 +162,7 @@ public class BudgetService
         if (start > end) return 0;
         var budgets = _budgetRepo.GetAll();
 
-        var diffDays = (end - start).Days + 1;
-        List<string> monthList = new List<string>
+        var monthList = new List<string>
         {
             start.ToString("yyyyMM"),
             end.ToString("yyyyMM"),
@@ -112,16 +175,21 @@ public class BudgetService
 
         var amountByDay = budgetList
             .ToDictionary(x => x.YearMonth,
-                x => x.Amount / DateTime.DaysInMonth(int.Parse(x.YearMonth[0..4]), int.Parse(x.YearMonth[4..])));
+                x => x.Amount / DateTime.DaysInMonth(int.Parse(x.YearMonth[..4]), int.Parse(x.YearMonth[4..])));
 
 
         var amount = 0;
         var currentDay = start;
         while (currentDay <= end)
         {
-            amount += amountByDay[currentDay.ToString("yyyyMM")];
-
+            var key = currentDay.ToString("yyyyMM");
             currentDay = currentDay.AddDays(1);
+            if (!amountByDay.ContainsKey(key))
+            {
+                continue;
+            }
+
+            amount += amountByDay[key];
         }
         
 
