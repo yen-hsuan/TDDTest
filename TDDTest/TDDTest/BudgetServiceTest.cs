@@ -1,15 +1,16 @@
+using ConsoleApp1;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NSubstitute;
 
 namespace TDDTest;
 
-public class UnitTest1
+public class BudgetServiceTest
 {
     private readonly BudgetService _budgetService;
     private readonly IBudgetRepo _budgetRepo;
 
-    public UnitTest1()
+    public BudgetServiceTest()
     {
         _budgetRepo = Substitute.For<IBudgetRepo>();
         _budgetService = new BudgetService(_budgetRepo);
@@ -146,64 +147,4 @@ public class UnitTest1
         var actual = _budgetService.Query(new DateTime(2023, 1, 2), new DateTime(2023, 1, 1));
         actual.Should().Be(0);
     }
-}
-
-public class BudgetService
-{
-    private readonly IBudgetRepo _budgetRepo;
-
-    public BudgetService(IBudgetRepo budgetRepo)
-    {
-        _budgetRepo = budgetRepo;
-    }
-
-    public decimal Query(DateTime start, DateTime end)
-    {
-        if (start > end) return 0;
-        var budgets = _budgetRepo.GetAll();
-
-        var monthList = new List<string>
-        {
-            start.ToString("yyyyMM"),
-            end.ToString("yyyyMM"),
-        };
-        var budgetList = budgets.Where(x => monthList.Contains(x.YearMonth)).ToList();
-        if (budgetList.Count == 0)
-        {
-            return 0;
-        }
-
-        var amountByDay = budgetList
-            .ToDictionary(x => x.YearMonth,
-                x => x.Amount / DateTime.DaysInMonth(int.Parse(x.YearMonth[..4]), int.Parse(x.YearMonth[4..])));
-
-
-        var amount = 0;
-        var currentDay = start;
-        while (currentDay <= end)
-        {
-            var key = currentDay.ToString("yyyyMM");
-            currentDay = currentDay.AddDays(1);
-            if (!amountByDay.ContainsKey(key))
-            {
-                continue;
-            }
-
-            amount += amountByDay[key];
-        }
-        
-
-        return amount;
-    }
-}
-
-public interface IBudgetRepo
-{
-    List<Budget> GetAll();
-}
-
-public class Budget
-{
-    public string YearMonth { get; set; }
-    public int Amount { get; set; }
 }
