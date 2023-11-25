@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "EzvER5i1g/2kBHHJplwrMdwXg9qkMj/KIIE9v6WObGxJ0xixMy3LJXJJ5yclA71vIgN9SMMfjCbBhJGD6FJeVQ==",
+  "success": true,
+  "projectFilePath": "D:\\Workspace\\Workshop\\TDDTest\\TDDTest\\ConsoleApp1\\ConsoleApp1.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1803",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "You are running the 'restore' operation with an 'HTTP' source, 'http://nuget.coreop.net/nuget'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."
+    }
+  ]
+}
