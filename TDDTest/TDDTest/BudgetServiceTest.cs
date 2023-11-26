@@ -121,6 +121,29 @@ public class BudgetServiceTest
         actual.Should().Be(50); 
         
     }
+    [Fact]
+    public void query_amount_in_three_month()
+    {
+        _budgetRepo.GetAll().Returns(new List<Budget> { new Budget
+            {
+                YearMonth = "202310",
+                Amount = 310
+            },
+            new Budget
+            {
+                YearMonth = "202311",
+                Amount = 900
+            },
+            new Budget
+            {
+                YearMonth = "202312",
+                Amount = 620
+            }
+        });
+        var actual = _budgetService.Query(new DateTime(2023, 10, 31), new DateTime(2023, 12, 2));
+        actual.Should().Be(950); 
+        
+    }
 
     [Fact]
     public void query_cross_two_year()

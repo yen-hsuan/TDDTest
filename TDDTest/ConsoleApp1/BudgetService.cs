@@ -1,18 +1,11 @@
 ﻿namespace ConsoleApp1;
 
-public class BudgetService
+public class BudgetService(IBudgetRepo budgetRepo)
 {
-    private readonly IBudgetRepo _budgetRepo;
-
-    public BudgetService(IBudgetRepo budgetRepo)
-    {
-        _budgetRepo = budgetRepo;
-    }
-
     public decimal Query(DateTime start, DateTime end)
     {
         if (start > end) return 0;
-        var budgets = _budgetRepo.GetAll();
+        var budgets = budgetRepo.GetAll();
 
         var monthList = new List<string>
         {
